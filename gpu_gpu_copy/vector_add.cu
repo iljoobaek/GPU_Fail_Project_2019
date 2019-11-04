@@ -23,7 +23,8 @@ void vector_addition(int n, int *e_x, int *e_y, int *e_z, int *e_m) {
     //Inserted Error: id = n
     if (id < n) { //for (id = 0; id <= n; id++) {
         e_z[id] = e_x[id] + e_y[id];
-	e_m[id] = e_m[id];
+        //Error Injected : access unallocated memory
+	    e_m[id] = e_z[id];
     }
 }
 
@@ -52,19 +53,20 @@ int main() {
     cudaMalloc(&d_x, no_el*sizeof(int));
     cudaMalloc(&d_y, no_el*sizeof(int));
     cudaMalloc(&d_z, no_el*sizeof(int));
-    cudaMalloc(&d_m, (no_el-1)*sizeof(int));
+    //Error Injected : allocate gpu memory less
+    cudaMalloc(&d_m, (no_el-100)*sizeof(int));
 
     cudaMemcpy(d_x, h_x, no_el*sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_y, h_y, no_el*sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_z, h_z, no_el*sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_m, h_m, (no_el-1)*sizeof(int), cudaMemcpyHostToDevice);
+    gpuErrchk(cudaMemcpy(d_m, h_m, (no_el-100)*sizeof(int), cudaMemcpyHostToDevice));
 
     dim3 block(block_size);
     dim3 grid(grid_size);
 
     vector_addition<<<grid, block>>>(no_el, d_x, d_y, d_z, d_m);
 
-    cudaMemcpy(h_z, d_z, no_el*sizeof(int), cudaMemcpyDeviceToHost);
+    gpuErrchk(cudaMemcpy(h_z, d_z, no_el*sizeof(int), cudaMemcpyDeviceToHost));
 
     cudaFree(d_x);
     cudaFree(d_y);
