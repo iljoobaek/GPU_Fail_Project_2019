@@ -24,28 +24,28 @@ void array_sum(int n, int *e_x, int *e_z) {
         for (id = 0; id < n; id++) {
             *e_z += e_x[id] * 4;
             //Overflow error check
-            //if (*e_z < 0) {
-            //   printf("GPU ERROR\n");
-            //   return;
-            //}
+            if (*e_z < 0) {
+               printf("GPU ERROR %d %d\n", blockIdx.x, threadIdx.x);
+               return;
+            }
         }
 }
 
 int main() {
     int no_el = 1048576;
     int block_size = 512;
-    int grid_size = (no_el/block_size) + 1;                    //ceil doesn't give correct grid size
+    int grid_size = (no_el/block_size) + 1;    //ceil doesn't give correct grid size
 
-    int *h_x, *d_x, *h_z, *d_z;
-
+    int *h_x, *h_z;
     h_x = (int*)malloc(no_el*sizeof(int));
     h_z = (int*)malloc(sizeof(int));
 
     *h_z = 0;
     for (int i = 0; i < no_el; i++) {
-            h_x[i] = i + 200;                                                                                           //sum = 524288(0+1048575)=already out of bounds
-        }
+            h_x[i] = i + 200;     //sum = 524288(0+1048575)=already out of bounds
+    }
 
+    int *d_x, *d_z;
     cudaMalloc(&d_x, no_el*sizeof(int));
     cudaMalloc(&d_z, sizeof(int));
 

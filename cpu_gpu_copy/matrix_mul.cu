@@ -57,6 +57,7 @@ int main() {
 
     cudaMalloc(&d_matrix_1, size);
     cudaMalloc(&d_matrix_2, size);
+    //Error injected : size is less than the target size
     cudaMalloc(&d_result, size-sizeof(float));
 
     cudaMemcpy(d_matrix_1, h_matrix_1, size, cudaMemcpyHostToDevice);
